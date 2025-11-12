@@ -1,38 +1,109 @@
+# ===========================
+# 📦 Node & Expo Project Ignore
+# ===========================
+
+# Node modules (ضخم جدًا ولا يُرفع للمستودع)
 node_modules/
 
-.git/
+# ملفات المشروع المؤقتة
 .expo/
+.expo-shared/
+.expo-cache/
 
+# ===========================
+# 🧱 Build Outputs
+# ===========================
+
+# ملفات ومجلدات البناء النهائية
 dist/
+build/
+output/
 web-build/
-expo-env.d.ts
 
-*.orig.*
+# تطبيقات جاهزة
+*.aab
+*.apk
+*.ipa
+
+# ===========================
+# ⚙️ Expo & EAS
+# ===========================
+
+# ملفات EAS Build المؤقتة
+eas-build/
+eas-output/
+
+# ملفات مؤقتة من Metro bundler وWatchman
+.metro-health-check*
+.watchmanconfig
+
+# ===========================
+# 🔐 Sensitive Files
+# ===========================
+
+# ملفات البيئة
+.env
+.env*.local
+.env.production
+.env.development
+*.secret.*
+
+# شهادات وتواقيع
 *.jks
 *.p8
 *.p12
 *.key
+*.pem
 *.mobileprovision
 
-.metro-health-check*
+# ===========================
+# 💾 Platforms
+# ===========================
 
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-.DS_Store
-*.pem
-
-.env*.local
-
-*.tsbuildinfo
-
-.natively/
-
+# مجلدات Android و iOS (غير مستخدمة في Managed workflow)
 android/
 ios/
 
-netlify.toml
-.netlify/
+# ===========================
+# 🧩 TypeScript & JS
+# ===========================
 
+# ملفات البناء المؤقتة
+*.tsbuildinfo
+*.orig.*
+
+# ===========================
+# 🧰 Tools & Config
+# ===========================
+
+# Logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+logs/
+
+# macOS system files
+.DS_Store
+
+# Netlify & Deployment
+.netlify/
+netlify.toml
+
+# Workbox (PWA Cache)
+workbox-config.js
+
+# نُسخ احتياطية مؤقتة للمحررات
+*.bak
+*.tmp
+
+# pnpm lock (في حال استخدام npm)
 pnpm-lock.yaml
+
+# ===========================
+# 🧪 Misc
+# ===========================
+
+# مجلدات مخفية أو مخصصة من أدوات خارجية
+.natively/
+.git/

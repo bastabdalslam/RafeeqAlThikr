@@ -87,7 +87,7 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     vibrationEnabled: true,
   },
 
-  updateProgress: (athkarId: string, count: number) => {
+  updateProgress: async (athkarId: string, count: number) => {
     const state = get();
     const newProgress = {
       ...state.progress,
@@ -109,7 +109,7 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     console.log('Progress updated for:', athkarId, 'Count:', count);
   },
 
-  resetProgress: (athkarId: string) => {
+  resetProgress: async (athkarId: string) => {
     const state = get();
     const newProgress = { ...state.progress };
     delete newProgress[athkarId];
@@ -124,7 +124,7 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     console.log('Progress reset for:', athkarId);
   },
 
-  toggleFavorite: (athkarId: string) => {
+  toggleFavorite: async (athkarId: string) => {
     const state = get();
     const isFavorite = state.favorites.includes(athkarId);
     const newFavorites = isFavorite
@@ -141,7 +141,7 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     console.log('Favorite toggled:', athkarId, 'Is favorite:', !isFavorite);
   },
 
-  toggleTheme: () => {
+  toggleTheme: async () => {
     const state = get();
     const newTheme = !state.isDarkMode;
     set({ isDarkMode: newTheme });
@@ -154,7 +154,7 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     console.log('Theme toggled:', newTheme ? 'Dark' : 'Light');
   },
 
-  updateDailyStats: (stats: Partial<DailyStats>) => {
+  updateDailyStats: async (stats: Partial<DailyStats>) => {
     const state = get();
     const today = new Date().toDateString();
     
@@ -196,7 +196,7 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     return state.dailyStats.totalProgress;
   },
 
-  incrementTasbeeh: () => {
+  incrementTasbeeh: async () => {
     const state = get();
     const newCount = state.tasbeehCount + 1;
     const newSets = Math.floor(newCount / state.tasbeehTarget);
@@ -207,8 +207,8 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     });
     
     try {
-      await storage.set('tasbeeh_count', newCount);
-      await storage.set('tasbeeh_sets', newSets);
+      await storage.set('tasbeeh_count', newCount.toString());
+      await storage.set('tasbeeh_sets', newSets.toString());
     } catch (error) {
       console.error('Error saving tasbeeh:', error);
     }
@@ -216,15 +216,15 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     console.log('Tasbeeh incremented:', newCount);
   },
 
-  resetTasbeeh: () => {
+  resetTasbeeh: async () => {
     set({ 
       tasbeehCount: 0,
       tasbeehSets: 0,
     });
     
     try {
-      await storage.set('tasbeeh_count', 0);
-      await storage.set('tasbeeh_sets', 0);
+      await storage.set('tasbeeh_count', '0');
+      await storage.set('tasbeeh_sets', '0');
     } catch (error) {
       console.error('Error resetting tasbeeh:', error);
     }
@@ -232,11 +232,11 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     console.log('Tasbeeh reset');
   },
 
-  setTasbeehTarget: (target: number) => {
+  setTasbeehTarget: async (target: number) => {
     set({ tasbeehTarget: target });
     
     try {
-      await storage.set('tasbeeh_target', target);
+      await storage.set('tasbeeh_target', target.toString());
     } catch (error) {
       console.error('Error saving tasbeeh target:', error);
     }
@@ -244,7 +244,7 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     console.log('Tasbeeh target set:', target);
   },
 
-  updateNotificationSettings: (settings: Partial<NotificationSettings>) => {
+  updateNotificationSettings: async (settings: Partial<NotificationSettings>) => {
     const state = get();
     const newSettings = {
       ...state.notifications,
@@ -262,7 +262,7 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     console.log('Notification settings updated:', settings);
   },
 
-  clearAllReminders: () => {
+  clearAllReminders: async () => {
     set({
       notifications: {
         morningEnabled: false,
@@ -368,3 +368,4 @@ export const useAthkarStore = create<AthkarStore>((set, get) => ({
     }
   },
 }));
+

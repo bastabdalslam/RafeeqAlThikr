@@ -1,76 +1,93 @@
-import { openDatabase } from 'expo-sqlite/next';
+import * as SQLite from 'expo-sqlite';
 
-const db = openDatabase('rafeeqalthikr.db');
+const db = SQLite.openDatabase('rafeeqalthikr.db');
 
-// Function to initialize the database table
-async function initDatabase() {
-  await db.execAsync(`
-    PRAGMA journal_mode = WAL;
-    CREATE TABLE IF NOT EXISTS key_value_store (
-      key TEXT PRIMARY KEY NOT NULL,
-      value TEXT
+// إنشاء الجدول داخل قاعدة البيانات
+function initDatabase() {
+  db.transaction(tx => {
+    tx.executeSql(
+      `CREATE TABLE IF NOT EXISTS key_value_store (
+        key TEXT PRIMARY KEY NOT NULL,
+        value TEXT
+      );`
     );
-  `);
+  });
 }
 
-// Initialize the database on module load
+// استدعاء التهيئة عند تحميل الملف
 initDatabase();
 
-// Custom storage object compatible with MMKV's basic interface (getString, set)
+// كائن التخزين المخصص
 export const sqliteStorage = {
-  /**
-   * Retrieves a string value for a given key.
-   * @param key The key to retrieve.
-   * @returns The stored string value, or null if not found.
-   */
-  getString: async (key: string): Promise<string | null> => {
-    try {
-      const result = await db.getFirstAsync<{ value: string }>(
-        'SELECT value FROM key_value_store WHERE key = ?',
-        [key]
-      );
-      return result ? result.value : null;
-    } catch (error) {
-      console.error(`SQLite Error: Failed to get key "${key}"`, error);
-      return null;
-    }
+  // 📘 جلب قيمة حسب المفتاح
+  getString: (key: string): Promise<string | null> => {
+    return new Promise((resolve, reject) => {
+      db.transaction(tx => {
+        tx.executeSql(
+          'SELECT value FROM key_value_store WHERE key = ?;',
+          [key],
+          (_, { rows }) => {
+            if (rows.length > 0) {
+              resolve(rows.item(0).value);
+            } else {
+              resolve(null);
+            }
+          },
+          (_, error) => {
+            console.error(`SQLite Error: Failed to get key "${key}"`, error);
+            reject(error);
+            return false;
+          }
+        );
+      });
+    });
   },
 
-  /**
-   * Sets a string value for a given key.
-   * @param key The key to set.
-   * @param value The string value to store.
-   */
-  set: async (key: string, value: string | boolean | number): Promise<void> => {
-    const stringValue = typeof value === 'boolean' ? value.toString() : String(value);
-    try {
-      await db.runAsync(
-        'INSERT OR REPLACE INTO key_value_store (key, value) VALUES (?, ?)',
-        [key, stringValue]
-      );
-    } catch (error) {
-      console.error(`SQLite Error: Failed to set key "${key}"`, error);
-    }
+  // 📗 حفظ أو تعديل قيمة
+  set: (key: string, value: string | boolean | number): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const stringValue =
+        typeof value === 'boolean' ? value.toString() : String(value);
+      db.transaction(tx => {
+        tx.executeSql(
+          'INSERT OR REPLACE INTO key_value_store (key, value) VALUES (?, ?);',
+          [key, stringValue],
+          () => resolve(),
+          (_, error) => {
+            console.error(`SQLite Error: Failed to set key "${key}"`, error);
+            reject(error);
+            return false;
+          }
+        );
+      });
+    });
   },
 
-  /**
-   * Deletes a key-value pair.
-   * @param key The key to delete.
-   */
-  delete: async (key: string): Promise<void> => {
-    try {
-      await db.runAsync('DELETE FROM key_value_store WHERE key = ?', [key]);
-    } catch (error) {
-      console.error(`SQLite Error: Failed to delete key "${key}"`, error);
-    }
+  // 📕 حذف مفتاح
+  delete: (key: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      db.transaction(tx => {
+        tx.executeSql(
+          'DELETE FROM key_value_store WHERE key = ?;',
+          [key],
+          () => resolve(),
+          (_, error) => {
+            console.error(`SQLite Error: Failed to delete key "${key}"`, error);
+            reject(error);
+            return false;
+          }
+        );
+      });
+    });
   },
 };
 
-// Helper function to convert MMKV's getBoolean to use the new storage
-// MMKV's getBoolean returns a boolean, while our getString returns a string or null.
-export const getBooleanFromStorage = async (key: string): Promise<boolean | undefined> => {
+// دالة مساعدة لتحويل القيم النصية إلى Boolean
+export const getBooleanFromStorage = async (
+  key: string
+): Promise<boolean | undefined> => {
   const value = await sqliteStorage.getString(key);
   if (value === 'true') return true;
   if (value === 'false') return false;
-  return undefined; // MMKV returns undefined if key is not found
+  return undefined;
 };

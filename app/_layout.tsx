@@ -1,4 +1,19 @@
 
+import * as Sentry from '@sentry/react-native';
+import { setJSExceptionHandler } from 'react-native-exception-handler';
+
+Sentry.init({
+  dsn: 'https://6cb54fa7f1912a577afcb38bee62a81b@o4510345329967104.ingest.us.sentry.io/4510345337896960',
+  enableInExpoDevelopment: true,
+  debug: true, // Set this to `true` to see Sentry logs in your console
+});
+
+// 2. تسجيل جميع الأخطاء غير المعالجة
+setJSExceptionHandler((error, isFatal) => {
+  Sentry.Native.captureException(error); // إرسال الخطأ للموقع
+  console.log("Caught by global handler:", error.message);
+}, true);
+
 import React, { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
@@ -46,11 +61,27 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-      loadFromStorage();
-      console.log('Fonts loaded and storage initialized');
+    // اختبار إرسال خطأ تلقائي بعد 3 ثواني
+    setTimeout(() => {
+      throw new Error("🔥 Test crash from _layout.tsx!");
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    async function prepareApp() {
+      if (fontsLoaded) {
+          Sentry.captureMessage("✅ Test Sentry connection from Expo");
+        try {
+          await SplashScreen.hideAsync();
+          await loadFromStorage();
+          console.log('Fonts loaded and storage initialized');
+        } catch (error) {
+          console.log('Error in app preparation:', error);
+        }
+      }
     }
+
+    prepareApp();
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
@@ -123,3 +154,4 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+

@@ -104,18 +104,15 @@ export default function TasbeehScreen() {
               {/* Progress Ring */}
               <View style={styles.progressRing}>
                 <View 
-  style={[
-    styles.progressFill,
-    {
-      borderColor: '#C9A961',
-      borderWidth: 8,
-      transform: [
-        { rotate: '-90deg' },
-        { scale: progress }
-      ]
-    }
-  ]}
-/>
+                  style={[
+                    styles.progressFill,
+                    {
+                      borderColor: '#C9A961',
+                      borderWidth: 8,
+                      transform: [{ rotate: `${progress * 360}deg` }],
+                    }
+                  ]}
+                />
               </View>
               
               {/* Inner Circle */}
